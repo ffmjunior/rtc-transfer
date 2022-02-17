@@ -1,0 +1,7 @@
+.venv*
+.vscode*
+*__pycache__*
+*.log
+
+#for my test files. hehe
+cat*
