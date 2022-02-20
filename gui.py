@@ -7,32 +7,50 @@ import pystray
 
 from PIL import Image, ImageDraw
 from pystray import MenuItem as item
+from tkinter import Tk 
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 class UI:
 
     def __init__(self) -> None:
+        pass
+
+    def read_file(self) -> str:
+        pass
+
+    def save_file(self) -> str:
+        pass
+
+
+class CLI(UI):
+    def read_file(self) -> str:
+        return super().read_file()
+
+    def save_file(self) -> str:
+        return super().save_file()
+
+
+class GUI(UI):
+    def __init__(self) -> None:
+        Tk().withdraw()
         self.image = Image.open("resources\exchange.png")
-        self.menu=( item('Send File', self.show_file_dialog), item('Receive File', self.show_save_dialog), item('Quit', self.quit_window))
+        self.menu=( item('Send File', self.read_file), item('Receive File', self.save_file), item('Quit', self.quit_window))
         self.icon=pystray.Icon("name", self.image, "My System Tray Icon", self.menu)
         self.icon.run()
 
 
     # Define  function for quit the window
-    def quit_window(self, icon, item):
+    def quit_window(self):
         self.icon.stop()
 
     # Define a function to show the window again
-    def show_file_dialog(self, icon, item):
+    def read_file(self):
         self.filename = askopenfilename()
-        return self.filename
+        return str(self.filename)
 
-    def show_save_dialog(self, icon, item):
+    def save_file(self):
         self.filename = asksaveasfilename()
-        return self.filename
+        return str(self.filename)
 
 
-
-
-
-ui = UI()
+ui = GUI()
