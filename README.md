@@ -4,9 +4,9 @@ File transfer based on WebRTC based on [aiortc datachannel-filexfer](https://git
 
 ## Requirements
 
-Python 3
+Up to Python 3.8 (depends on netifaces)
 
-`pip3 install aiortc websockets`
+`pip3 install aiortc websockets pystray tk `
 
 # Usage
 
