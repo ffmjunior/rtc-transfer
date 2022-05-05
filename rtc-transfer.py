@@ -5,12 +5,17 @@ import os
 import time
 import uuid
 
+from alive_progress import alive_bar
+from platform import python_branch
+
+
 
 from aiortc import RTCIceCandidate, RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.signaling import BYE, add_signaling_arguments, create_signaling
 from negotiations import WebSocketSignaling
 
 client_id = str(uuid.uuid1())[0:4]
+
 
 async def consume_signaling(pc, signaling):
     while True:
@@ -64,16 +69,31 @@ async def run_offer(pc, signaling, fp):
     await signaling.connect()
 
     done_reading = False
+    file_size = os.path.getsize( os.path.realpath(fp.name)) 
+    file_transfer = 0
+    read_bytes = 16384
+    chunks = file_size / read_bytes
+        
+    print (f"File size: {file_size} bytes. ")
     channel = pc.createDataChannel("filexfer")
 
     def send_data():
         nonlocal done_reading
+        nonlocal file_transfer
+        nonlocal read_bytes
+        nonlocal bar
+
 
         while (
             channel.bufferedAmount <= channel.bufferedAmountLowThreshold
         ) and not done_reading:
-            data = fp.read(16384)
-            channel.send(data)
+            
+            data = fp.read(read_bytes)            
+            channel.send(data)            
+            file_transfer = file_transfer + read_bytes
+            remaining = ( 1 - (file_transfer/file_size))*100
+            if remaining > 0 :
+                print(f"Transfer: {int(remaining)} % remaining") 
             if not data:
                 done_reading = True
 
@@ -110,8 +130,9 @@ if __name__ == "__main__":
     signaling = WebSocketSignaling(args.host, args.port, client_id, peer_code)
     pc = RTCPeerConnection()    
     if args.role == "send":
-        fp = open(args.filename, "rb")        
+        fp = open(args.filename, "rb")                
         coro = run_offer(pc, signaling, fp)
+        
     else:
         fp = open(args.filename, "wb")
         coro = run_answer(pc, signaling, fp)
