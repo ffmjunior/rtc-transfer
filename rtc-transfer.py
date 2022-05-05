@@ -5,7 +5,6 @@ import os
 import time
 import uuid
 
-from alive_progress import alive_bar
 from platform import python_branch
 
 
@@ -81,8 +80,6 @@ async def run_offer(pc, signaling, fp):
         nonlocal done_reading
         nonlocal file_transfer
         nonlocal read_bytes
-        nonlocal bar
-
 
         while (
             channel.bufferedAmount <= channel.bufferedAmountLowThreshold
