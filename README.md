@@ -6,7 +6,7 @@ File transfer based on WebRTC based on [aiortc datachannel-filexfer](https://git
 
 Python 3.8
 
-`pip3 install aiortc websockets`
+`pip install aiortc websockets progress` or `pip install -r requirements.txt`
 
 # Usage
 

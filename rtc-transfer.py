@@ -5,9 +5,8 @@ import os
 import time
 import uuid
 
+from progress.bar import Bar
 from platform import python_branch
-
-
 
 from aiortc import RTCIceCandidate, RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.signaling import BYE, add_signaling_arguments, create_signaling
@@ -69,30 +68,26 @@ async def run_offer(pc, signaling, fp):
 
     done_reading = False
     file_size = os.path.getsize( os.path.realpath(fp.name)) 
-    file_transfer = 0
-    read_bytes = 16384
-    chunks = file_size / read_bytes
+    chunk_size = 16384
+    bar = Bar('Tranferring', max=file_size, suffix='%(percent).1f%% Elapsed %(elapsed)ds Remaining %(eta)ds ')
         
     print (f"File size: {file_size} bytes. ")
     channel = pc.createDataChannel("filexfer")
 
     def send_data():
         nonlocal done_reading
-        nonlocal file_transfer
-        nonlocal read_bytes
-
+        nonlocal chunk_size
+        nonlocal bar
+        
         while (
             channel.bufferedAmount <= channel.bufferedAmountLowThreshold
         ) and not done_reading:
-            
-            data = fp.read(read_bytes)            
+            data = fp.read(chunk_size)            
             channel.send(data)            
-            file_transfer = file_transfer + read_bytes
-            remaining = ( 1 - (file_transfer/file_size))*100
-            if remaining > 0 :
-                print(f"Transfer: {int(remaining)} % remaining") 
+            bar.next(chunk_size)
             if not data:
                 done_reading = True
+                bar.finish()
 
     channel.on("bufferedamountlow", send_data)
     channel.on("open", send_data)
