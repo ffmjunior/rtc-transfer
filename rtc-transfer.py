@@ -14,6 +14,18 @@ from negotiations import WebSocketSignaling
 
 client_id = str(uuid.uuid1())[0:4]
 
+async def print_stats(pc: RTCPeerConnection):
+    while(True):
+        await asyncio.sleep(20)
+        if pc.connectionState == 'connected':
+            try:
+                stats = await pc.getStats()
+                stats_list = list(stats.values())
+                print("Stats: ", stats_list)
+            except Exception as e:
+                print("Stats: error!")
+        else:
+            print("Peer Connection: not connected!")
 
 async def consume_signaling(pc, signaling):
     while True:
@@ -72,25 +84,28 @@ async def run_offer(pc, signaling, fp):
     bar = Bar('Tranferring', max=file_size, suffix='%(percent).1f%% Elapsed %(elapsed)ds Remaining %(eta)ds ')
         
     print (f"File size: {file_size} bytes. ")
-    channel = pc.createDataChannel("filexfer")
+    channel = pc.createDataChannel("filexfer") 
 
     def send_data():
         nonlocal done_reading
         nonlocal chunk_size
         nonlocal bar
+        nonlocal pc
         
         while (
             channel.bufferedAmount <= channel.bufferedAmountLowThreshold
         ) and not done_reading:
             data = fp.read(chunk_size)            
             channel.send(data)            
-            bar.next(chunk_size)
+            bar.next(chunk_size) 
+            #print_stats(pc)           
             if not data:
                 done_reading = True
                 bar.finish()
 
     channel.on("bufferedamountlow", send_data)
     channel.on("open", send_data)
+
 
     # send offer
     await pc.setLocalDescription(await pc.createOffer())
@@ -120,7 +135,8 @@ if __name__ == "__main__":
     peer_code = input("Type peer code (if you dont have it, press enter): ")
     
     signaling = WebSocketSignaling(args.host, args.port, client_id, peer_code)
-    pc = RTCPeerConnection()    
+    pc = RTCPeerConnection() 
+    stats_coro = print_stats(pc)   
     if args.role == "send":
         fp = open(args.filename, "rb")                
         coro = run_offer(pc, signaling, fp)
@@ -132,10 +148,19 @@ if __name__ == "__main__":
     # run event loop
     loop = asyncio.get_event_loop()
     try:
-        loop.run_until_complete(coro)
+        #loop.run_until_complete(coro)
+        tasks = asyncio.gather(
+            coro,
+            stats_coro
+        )
+        loop.run_until_complete(tasks)
     except KeyboardInterrupt:
         pass
     finally:
         fp.close()
         loop.run_until_complete(pc.close())
         loop.run_until_complete(signaling.close())
+
+
+
+
