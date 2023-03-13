@@ -27,6 +27,7 @@ When it starts, type the 4-digit code generated on the receiver.
 `python3 rtc-transfer.py --host [server-address] --port [server-port] send [filename]`
 
 # Backlog
+- Turn into a folder sync app
 - Manage memory utilization on signaling server
 - Automatic definition of sender and receiver
 - UI
