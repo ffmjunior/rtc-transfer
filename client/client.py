@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+
 import argparse
 import asyncio
 import logging
 import os
+import sys
 import time
 import uuid
 
@@ -10,10 +13,9 @@ from platform import python_branch
 
 from aiortc import RTCIceCandidate, RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.signaling import BYE, add_signaling_arguments, create_signaling
-from negotiations import WebSocketSignaling
+from lib.negotiations import WebSocketSignaling
 
 client_id = str(uuid.uuid1())[0:4]
-
 
 async def consume_signaling(pc, signaling):
     while True:

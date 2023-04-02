@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile   
+    # depends_on:
+    #   - redis    
+    volumes:
+      - ./server:/app
+    # environment:
+    #   A_HOST: '0.0.0.0'
+    #   A_PORT: 6000
+    #   A_DEBUG: 1
+    ports:
+      - '5000:9000'
+
+  receiver:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.receiver      
+    depends_on:
+       - server 
+    volumes:
+      - ./client:/app
+    # environment:
+    #   A_HOST: '0.0.0.0'
+    #   A_PORT: 6000
+    #   A_DEBUG: 1
+    # ports:
+    #   - '5001:6000'
+
+  sender:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.sender       
+    depends_on:
+      - sender 
+    volumes:
+      - ./client:/app
+    # environment:
+    #   A_HOST: '0.0.0.0'
+    #   A_PORT: 6000
+    #   A_DEBUG: 1
+    # ports:
+    #   - '5001:6000'
+
+    
